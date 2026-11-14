@@ -1,15 +1,16 @@
 {
-  "short_name": "de-schaar-site",
-  "name": "de-schaar-site",
+  "short_name": "De Schaar",
+  "name": "De Schaar — Aveda kapsalon Gent",
   "icons": [
     {
-      "src": "athena-icon.svg",
+      "src": "brand-mark.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
   "start_url": "./",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#16241e",
+  "background_color": "#f6f1e8"
 }
