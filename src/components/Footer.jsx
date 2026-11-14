@@ -1,146 +1,203 @@
 import React from 'react';
+import { cx, first, text } from '../lib/ui';
 
-export default function Footer({ primaryTable, socialData = [], openingData = [], locationData = [] }) {
-  const info = primaryTable?.[0] || {};
-  const loc = locationData?.[0] || {};
+const iconMap = {
+  fa: 'fa-brands fa-facebook-f',
+  fb: 'fa-brands fa-facebook-f',
+  in: 'fa-brands fa-instagram',
+  ig: 'fa-brands fa-instagram',
+  tw: 'fa-brands fa-x-twitter',
+  li: 'fa-brands fa-linkedin-in',
+  yt: 'fa-brands fa-youtube',
+  wa: 'fa-brands fa-whatsapp',
+  tk: 'fa-brands fa-tiktok',
+};
 
-  const iconMap = {
-    'fa': 'fa-brands fa-facebook',
-    'in': 'fa-brands fa-instagram',
-    'tw': 'fa-brands fa-twitter',
-    'li': 'fa-brands fa-linkedin',
-    'yt': 'fa-brands fa-youtube',
-    'wa': 'fa-brands fa-whatsapp'
-  };
+const DAY_INDEX = {
+  zondag: 0,
+  maandag: 1,
+  dinsdag: 2,
+  woensdag: 3,
+  donderdag: 4,
+  vrijdag: 5,
+  zaterdag: 6,
+};
 
-  const extractText = (val, fallback = '') => {
-    if (typeof val !== 'object' || val === null) return val ?? fallback;
-    return val.text || val.title || val.label || val.name || val.value || fallback;
-  };
+export default function Footer({ primaryTable = [], socialData = [], openingData = [], locationData = [] }) {
+  const info = first(primaryTable);
+  const location = first(locationData);
+  const today = new Date().getDay();
 
-  const rawNaam = info.bedrijfsnaam || info.naam_bedrijf || info.naam || info.titel || 'De Schaar';
-  const naam = extractText(rawNaam);
+  const brand = text(info.bedrijfsnaam) || 'De Schaar';
+  const address = [text(location.straat_nummer), [text(location.postcode), text(location.stad)].filter(Boolean).join(' ')]
+    .filter(Boolean)
+    .join(', ');
+  const phone = text(info.telefoonnummer) || text(location.telefoonnummer);
+  const email = text(info.email) || text(location.email);
+  const copyright = text(info.copyright_tekst);
 
-  let adres = extractText(info.adres || info.address || info.locatie);
-  if (!adres && loc.straat_nummer) {
-    adres = `${loc.straat_nummer}, ${loc.postcode} ${loc.stad}`;
-  }
-
-  const telefoon = extractText(info.telefoonnummer || info.telefoon || info.phone || loc.telefoonnummer || '');
-  const email = extractText(info.email_algemeen || info.email_publiek || info.email || loc.email || '');
-  const kvk = extractText(info.kvk_nummer || info.kvk || info.chamber_of_commerce || '');
-  const copyright = extractText(info.copyright_tekst || 'Alle rechten voorbehouden.');
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${brand} ${address || 'Dok Noord 3, 9000 Gent'}`
+  )}`;
 
   return (
-    <footer
-      id="footer"
-      className="py-24 text-slate-400 border-t border-white/5"
-      style={{ backgroundColor: 'var(--color-footer-bg, #020617)' }}
-    >
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-16">
-          {/* Company Info */}
-          <div className="md:col-span-2">
-            <h3 className="text-3xl font-serif font-bold text-white mb-6 uppercase tracking-tighter">
-              <span data-dock-type="text" data-dock-bind="footer.0.bedrijfsnaam">{naam}</span>
-            </h3>
-            {adres && (
-              <div className="mb-4 flex items-start gap-4">
-                <i className="fa-solid fa-location-dot text-accent mt-1 shrink-0"></i>
-                <span data-dock-type="text" data-dock-bind="locatie.0.straat_nummer">{adres}</span>
+    <footer id="footer" className="relative overflow-hidden bg-[#101a15] text-[#f2ece1]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d98b62]/60 to-transparent"
+      />
+
+      <div className="shell relative z-10 pt-20 pb-10 md:pt-24">
+        <div className="grid gap-14 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.15fr] lg:gap-10">
+          <div>
+            <div className="flex items-center gap-3">
+              <img
+                src={`${import.meta.env.BASE_URL}brand-mark.svg`}
+                alt=""
+                width="48"
+                height="48"
+                className="h-11 w-11"
+                loading="lazy"
+              />
+              <div className="leading-none">
+                <p className="font-serif text-3xl tracking-[-0.02em] md:text-4xl">{brand}</p>
+                <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.32em] text-[#f2ece1]/60">
+                  Aveda salon · Dok Noord
+                </p>
               </div>
-            )}
-
-            {/* Social Icons */}
-            <div className="flex gap-4 mt-10">
-              {socialData.map((social, idx) => (
-                <a
-                  key={idx}
-                  href={extractText(social.url) || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 bg-white/5 hover:bg-accent hover:text-white rounded-xl flex items-center justify-center text-xl transition-all duration-300"
-                  title={extractText(social.naam)}
-                  data-dock-type="text"
-                  data-dock-bind={`social_media.${idx}.url`}
-                >
-                  <i className={iconMap[extractText(social.icoon_klasse)] || `fa-solid fa-${extractText(social.icoon_klasse)}`}></i>
-                </a>
-              ))}
             </div>
-          </div>
 
-          {/* Contact */}
-          <div>
-            <h4 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8">
-              Contact
-            </h4>
-            <div className="space-y-6">
-              {telefoon && (
-                <div className="flex items-center gap-4 group cursor-pointer">
-                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-accent transition-colors">
-                    <i className="fa-solid fa-phone text-xs"></i>
-                  </div>
-                  <span data-dock-type="text" data-dock-bind="footer.0.telefoonnummer">{telefoon}</span>
-                </div>
-              )}
-              {email && (
-                <div className="flex items-center gap-4 group cursor-pointer">
-                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-accent transition-colors">
-                    <i className="fa-solid fa-envelope text-xs"></i>
-                  </div>
-                  <span data-dock-type="text" data-dock-bind="footer.0.email">{email}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Openingsuren */}
-          <div>
-            <h4 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8">
-              Openingsuren
-            </h4>
-            <div className="space-y-2">
-              {openingData.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-xs border-b border-white/5 pb-1">
-                  <span data-dock-type="text" data-dock-bind={`openingsuren.${idx}.dag`}>{extractText(item.dag)}</span>
-                  <span data-dock-type="text" data-dock-bind={`openingsuren.${idx}.uren`}>{extractText(item.uren)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8">
-              Bedrijfsgegevens
-            </h4>
-            {kvk && (
-              <p className="text-xs mb-4 flex justify-between border-b border-white/5 pb-2">
-                <span className="opacity-50">
-                  <span>KVK</span>
-                </span>
-                <span data-dock-type="text" data-dock-bind="footer.0.kvk_nummer">{kvk}</span>
-              </p>
-            )}
-            <p className="text-[10px] leading-relaxed opacity-30 mt-8">
-              &copy; {new Date().getFullYear()} {naam}.<br />
-              <span data-dock-type="text" data-dock-bind="footer.0.copyright_tekst">{copyright}</span>
+            <p className="mt-8 max-w-sm text-sm leading-relaxed text-[#f2ece1]/60">
+              Kapsalon in het hart van de Gentse dokken. Knippen, kleuren en verzorgen met aandacht voor haar, hoofd
+              en huid.
             </p>
+
+            <div className="mt-8 flex gap-3">
+              {socialData.map((social, index) => {
+                const icon = iconMap[text(social.icoon_klasse)] || 'fa-solid fa-globe';
+                return (
+                  <a
+                    key={`${text(social.naam)}-${index}`}
+                    href={text(social.url) || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={text(social.naam)}
+                    title={text(social.naam)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-sm text-[#f2ece1]/80 transition-colors duration-300 hover:border-[#d98b62] hover:bg-[#d98b62] hover:text-white"
+                  >
+                    <i className={icon} aria-hidden="true" />
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#d98b62]">Bezoek</h2>
+            <address className="mt-6 space-y-1 text-sm not-italic leading-relaxed text-[#f2ece1]/75">
+              {address ? <p>{address}</p> : null}
+              <p className="text-[#f2ece1]/60">{text(location.ligging_omschrijving)}</p>
+            </address>
+            <a
+              href={mapsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#f2ece1] underline decoration-white/25 decoration-1 underline-offset-8 transition-colors hover:text-[#d98b62] hover:decoration-[#d98b62]"
+            >
+              Plan je route
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          <div>
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#d98b62]">Contact</h2>
+            <ul className="mt-6 space-y-4 text-sm text-[#f2ece1]/75">
+              {phone ? (
+                <li>
+                  <a href={`tel:${phone.replace(/\s+/g, '')}`} className="transition-colors hover:text-white">
+                    {phone}
+                  </a>
+                </li>
+              ) : null}
+              {email ? (
+                <li className="break-all">
+                  <a href={`mailto:${email}`} className="transition-colors hover:text-white">
+                    {email}
+                  </a>
+                </li>
+              ) : null}
+              {text(info.kvk_nummer) ? (
+                <li className="text-xs text-[#f2ece1]/40">BTW {text(info.kvk_nummer)}</li>
+              ) : null}
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#d98b62]">Openingsuren</h2>
+            <ul className="mt-6 space-y-2 text-sm">
+              {openingData.map((item, index) => {
+                const day = text(item.dag);
+                const isToday = DAY_INDEX[day.toLowerCase()] === today;
+                return (
+                  <li
+                    key={`${day}-${index}`}
+                    className={cx(
+                      'flex items-baseline justify-between gap-4 border-b border-white/10 pb-2',
+                      isToday ? 'text-[#f2ece1]' : 'text-[#f2ece1]/60'
+                    )}
+                  >
+                    <span className={cx('flex items-center gap-2', isToday && 'font-semibold')}>
+                      {isToday ? <span className="h-1 w-1 rounded-full bg-[#a24b28]" aria-hidden="true" /> : null}
+                      <span data-dock-type="text" data-dock-bind={`openingsuren.${index}.dag`}>
+                        {day}
+                      </span>
+                    </span>
+                    <span
+                      className={cx('tabular-nums', isToday ? 'text-[#f2ece1]' : 'text-[#f2ece1]/60')}
+                      data-dock-type="text"
+                      data-dock-bind={`openingsuren.${index}.uren`}
+                    >
+                      {text(item.uren)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] uppercase tracking-widest opacity-20">
-            Powered by Athena CMS
+        <div className="mt-16 flex flex-col gap-4 border-t border-white/10 pt-8 text-[11px] uppercase tracking-[0.22em] text-[#f2ece1]/55 md:flex-row md:items-center md:justify-between">
+          <p>
+            {copyright || `© ${new Date().getFullYear()} ${brand}`}
           </p>
-          <div className="flex gap-6 text-[10px] uppercase tracking-widest font-bold">
-            <a href={extractText(info.privacy_beleid_link) || "#"} className="hover:text-accent transition-colors" data-dock-type="text" data-dock-bind="footer.0.privacy_beleid_link">Privacy Policy</a>
-            <a href={extractText(info.cookies_beleid_link) || "#"} className="hover:text-accent transition-colors" data-dock-type="text" data-dock-bind="footer.0.cookies_beleid_link">Cookie Beleid</a>
+          <div className="flex flex-wrap items-center gap-6">
+            <a
+              href={text(info.privacy_beleid_link) || '#'}
+              className="transition-colors hover:text-[#f2ece1]"
+              data-dock-type="text"
+              data-dock-bind="footer.0.privacy_beleid_link"
+            >
+              Privacybeleid
+            </a>
+            <a
+              href={text(info.cookies_beleid_link) || '#'}
+              className="transition-colors hover:text-[#f2ece1]"
+              data-dock-type="text"
+              data-dock-bind="footer.0.cookies_beleid_link"
+            >
+              Cookiebeleid
+            </a>
+            <span className="text-[#f2ece1]/20">Athena CMS</span>
           </div>
         </div>
       </div>
+
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 select-none whitespace-nowrap font-serif text-[22vw] leading-none text-white/[0.03]"
+      >
+        {brand}
+      </span>
     </footer>
   );
 }

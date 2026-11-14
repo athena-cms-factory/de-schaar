@@ -1,126 +1,377 @@
 @import "tailwindcss";
-/* Athena Modern Theme - Tailwind CSS v4 */
+/* ============================================================
+   Athena Modern Theme — De Schaar
+   Warm editorial design system (paper, ink, copper, forest)
+   Tokens are overridable at runtime by the Athena Dock.
+   ============================================================ */
 
 @theme {
-  /* Design Tokens - Deze worden door de AI overschreven per project */
-  --color-primary: rgb(var(--color-primary-rgb, 15 23 42));
-  --color-secondary: rgb(var(--color-secondary-rgb, 100 116 139));
-  --color-accent: rgb(var(--color-accent-rgb, 59 130 246));
-  --color-button-bg: rgb(var(--color-button-bg-rgb, 59 130 246));
-  --color-card-bg: rgb(var(--color-card-bg-rgb, 255 255 255));
-  --color-header-bg: rgb(var(--color-header-bg-rgb, 255 255 255));
-  --color-background: rgb(var(--color-background-rgb, 255 255 255));
-  --color-surface: rgb(var(--color-surface-rgb, 248 250 252));
-  --color-text: rgb(var(--color-text-rgb, 30 41 59));
-  --color-heading: rgb(var(--color-heading-rgb, 15 23 42));
-  --color-title: rgb(var(--color-title-rgb, 15 23 42));
-  
-  --font-sans: var(--font-sans, 'Inter', ui-sans-serif, system-ui, sans-serif);
-  --font-serif: var(--font-serif, 'Playfair Display', ui-serif, Georgia, serif);
-  
-  --radius-custom: var(--radius-custom, 1rem);
-  --shadow-main: var(--shadow-main, 0 4px 20px -2px rgba(0, 0, 0, 0.05));
-  --shadow-soft: var(--shadow-main);
-  
-  /* Animaties */
-  --animate-reveal: reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  --color-primary: rgb(var(--color-primary-rgb, 22 36 30));
+  --color-secondary: rgb(var(--color-secondary-rgb, 109 106 96));
+  --color-accent: rgb(var(--color-accent-rgb, 162 75 40));
+  --color-accent-soft: rgb(var(--color-accent-soft-rgb, 226 199 180));
+  --color-button-bg: rgb(var(--color-button-bg-rgb, 22 36 30));
+  --color-card-bg: rgb(var(--color-card-bg-rgb, 255 253 248));
+  --color-header-bg: rgb(var(--color-header-bg-rgb, 246 241 232));
+  --color-background: rgb(var(--color-background-rgb, 246 241 232));
+  --color-surface: rgb(var(--color-surface-rgb, 238 230 216));
+  --color-text: rgb(var(--color-text-rgb, 43 42 37));
+  --color-heading: rgb(var(--color-heading-rgb, 22 36 30));
+  --color-muted: rgb(var(--color-muted-rgb, 109 106 96));
+  --color-line: rgba(22, 36, 30, 0.14);
+
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+
+  --radius-card: 1.25rem;
+  --radius-frame: 1.75rem;
+  --shadow-soft: 0 18px 50px -30px rgba(22, 36, 30, 0.45);
+  --shadow-lift: 0 30px 60px -30px rgba(22, 36, 30, 0.35);
+
+  --animate-reveal: reveal 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
 
 @keyframes reveal {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 @layer base {
   :root {
     color-scheme: light;
-    scroll-behavior: smooth;
-    
-    /* Explicit defaults so Dock can override */
-    --color-primary: #0f172a;
-    --color-heading: #0f172a;
-    --color-title: #0f172a;
-    --color-accent: #3b82f6;
-    --color-button-bg: #3b82f6;
-    --color-card-bg: #ffffff;
-    --color-header-bg: #ffffff;
-    --color-surface: #ffffff;
-    --color-background: #ffffff;
-    --color-text: #1e293b;
-    --radius-custom: 1rem;
-    --shadow-main: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    --header-h: 64px;
+    --shell: 1280px;
+    --gutter: clamp(1.25rem, 4.5vw, 3.5rem);
+    --section-py: clamp(4rem, 8vw, 7.5rem);
+    --hero-overlay-start: rgba(10, 18, 14, 0.82);
+    --hero-overlay-end: rgba(10, 18, 14, 0.25);
+
+    /* Explicit defaults so the Dock can override every token */
+    --color-primary: #16241e;
+    --color-secondary: #6d6a60;
+    --color-accent: #a24b28;
+    --color-accent-soft: #e2c7b4;
+    --color-button-bg: #16241e;
+    --color-card-bg: #fffdf8;
+    --color-header-bg: #f6f1e8;
+    --color-surface: #eee6d8;
+    --color-background: #f6f1e8;
+    --color-text: #2b2a25;
+    --color-heading: #16241e;
+    --color-muted: #6d6a60;
+    --radius-card: 1.25rem;
+    --shadow-soft: 0 18px 50px -30px rgba(22, 36, 30, 0.45);
   }
 
-  /* Dark mode overrides via class (Dock controlled) */
   :root.dark {
     color-scheme: dark;
-    --color-primary: #ffffff;
-    --color-heading: #ffffff;
-    --color-title: #ffffff;
-    --color-accent: #60a5fa;
-    --color-button-bg: #60a5fa;
-    --color-card-bg: #1e293b;
-    --color-header-bg: #0f172a;
-    --color-surface: #1e293b;
-    --color-background: #0f172a;
-    --color-text: #f8fafc;
-    --shadow-main: 0 10px 40px rgba(0,0,0,0.3);
+    --color-primary: #f6f1e8;
+    --color-heading: #f6f1e8;
+    --color-text: #e9e3d7;
+    --color-muted: #b3ac9d;
+    --color-background: #101a15;
+    --color-surface: #18251f;
+    --color-card-bg: #18251f;
+    --color-line: rgba(246, 241, 232, 0.16);
+  }
+
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
+    margin: 0;
     background-color: var(--color-background);
     color: var(--color-text);
     font-family: var(--font-sans);
-    line-height: 1.6;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-synthesis-weight: none;
   }
 
-  h1 {
-    color: var(--color-title);
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-serif);
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
-  }
-
-  h2, h3, h4 {
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
     color: var(--color-heading);
-    font-family: var(--font-serif);
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
+    text-wrap: balance;
   }
 
-  /* Reveal animatie bij binnenkomst (React 19 / Tailwind v4 friendly) */
-  section {
-    @starting-style {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    transition: opacity 0.8s, transform 0.8s;
+  p {
+    text-wrap: pretty;
   }
 
   img {
+    display: block;
     max-width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: var(--radius-custom);
+  }
+
+  picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  /* Fixed header offset for in-page anchors */
+  section[id],
+  header[id] {
+    scroll-margin-top: calc(var(--header-h) + 8px);
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply px-6 py-3 text-white rounded-full font-semibold transition-all hover:scale-105 active:scale-95 shadow-xl;
-    background-color: var(--color-button-bg);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  .shell {
+    width: 100%;
+    max-width: var(--shell);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
   }
-  
+
+  .section-pad {
+    padding-block: clamp(3.5rem, calc(var(--pad, 40) * 1.6px + 2rem), 8rem);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .eyebrow .rule {
+    display: block;
+    height: 1px;
+    width: 2.25rem;
+    background: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  }
+
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 0.98;
+  }
+
+  .lede {
+    font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      background-color 0.35s ease,
+      color 0.35s ease,
+      border-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-solid {
+    background: var(--color-button-bg);
+    color: #f8f5ee;
+    box-shadow: 0 14px 30px -18px rgba(10, 18, 14, 0.8);
+  }
+
+  .btn-solid:hover {
+    background: color-mix(in srgb, var(--color-button-bg) 86%, var(--color-accent));
+  }
+
+  .btn-light {
+    background: #f8f5ee;
+    color: #16241e;
+  }
+
+  .btn-light:hover {
+    background: #fff;
+  }
+
+  .btn-outline {
+    border: 1px solid color-mix(in srgb, var(--color-heading) 28%, transparent);
+    color: var(--color-heading);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--color-heading);
+    background: color-mix(in srgb, var(--color-heading) 6%, transparent);
+  }
+
+  .btn-on-dark {
+    border: 1px solid rgba(248, 245, 238, 0.4);
+    color: #f8f5ee;
+  }
+
+  .btn-on-dark:hover {
+    background: rgba(248, 245, 238, 0.12);
+    border-color: rgba(248, 245, 238, 0.8);
+  }
+
   .card {
-    @apply p-6 rounded-3xl border border-slate-100 shadow-soft transition-transform hover:-translate-y-1;
-    background-color: var(--color-card-bg);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
   }
-  
-  .badge {
-    @apply px-3 py-1 bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest rounded-full;
+
+  .frame {
+    position: relative;
+    border-radius: var(--radius-frame);
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-heading) 8%, transparent);
+  }
+
+  .frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(10, 18, 14, 0.08);
+    pointer-events: none;
+  }
+
+  .rule {
+    height: 1px;
+    background: var(--color-line);
+  }
+
+  .link-quiet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-heading);
+    padding-block: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-heading) 30%, transparent);
+    transition: border-color 0.3s ease, color 0.3s ease;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero-media img {
+    animation: hero-zoom 26s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+
+  .link-quiet:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.75s ease,
+      transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-h: 80px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
   }
 }

@@ -1,151 +1,230 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { cx, first, text } from '../lib/ui';
+
+const SECTION_IDS = [
+  'hero',
+  'missie',
+  'locatie',
+  'stylist_gradatie',
+  'team',
+  'tarieven',
+  'testimonials',
+  'aveda',
+  'footer',
+];
 
 /**
- * Header (Docked Track)
- * Robust Hero section with support for Title Color and detached Header Image.
+ * Vaste navigatie: transparant over de hero, daarna effen.
+ * Met scrollspy en een volledig scherm-menu op mobiel.
  */
-function Header({ primaryTable, tableName, hero = {}, headerSettings = {}, navData = [] }) {
-  const info = Array.isArray(primaryTable) ? (primaryTable[0] || {}) : (primaryTable || {});
+export default function Header({ hero = {}, headerSettings = {}, navData = [], primaryTable = [] }) {
+  const settings = first(headerSettings);
+  const heroData = first(hero);
+  const info = first(primaryTable);
 
-  const heroData = Array.isArray(hero) ? (hero[0] || {}) : hero;
-  const settings = Array.isArray(headerSettings) ? (headerSettings[0] || {}) : headerSettings;
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState('hero');
 
-  // Look for fields in primary table for fallbacks
-  const keys = Object.keys(info);
-  const fallbackTitleKey = keys.find(k => /naam|titel|header|kop|bedrijfsnaam/i.test(k)) || keys[0];
-  const fallbackTaglineKey = keys.find(k => /slogan|tagline|ondertitel|subtitle/i.test(k));
+  const brand = text(info.bedrijfsnaam) || text(heroData.titel) || 'De Schaar';
+  const tagline = text(heroData.ondertitel) || 'Aveda-kapsalon · Gent';
 
-  // Helper to safely extract text from potential Athena style-objects
-  const extractText = (val, fallback = '') => {
-    if (typeof val !== 'object' || val === null) return val ?? fallback;
-    return val.text || val.title || val.label || val.name || val.value || fallback;
-  };
+  const navItems = useMemo(
+    () =>
+      [...navData]
+        .filter((item) => item && item.slug)
+        .sort((a, b) => (a.menu_positie || 0) - (b.menu_positie || 0)),
+    [navData]
+  );
 
-  const getImageUrl = (url) => {
-    if (!url) return '';
-    if (typeof url === 'object') url = url.text || url.url || '';
-    if (url.startsWith('http') || url.startsWith('data:')) return url;
-    const base = import.meta.env.BASE_URL || '/';
-    return (base + '/images/' + url).replace(new RegExp('/+', 'g'), '/');
-  };
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 32);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-  // 1. Separate Titles: Hero vs Navigation
-  // Navigation Title: usually the business name from Footer table
-  const navTitleValue = extractText(info[fallbackTitleKey] || 'De Schaar');
-  
-  // Hero Title: the main headline in the middle of the page
-  const heroTitleValue = heroData.titel || heroData.title || navTitleValue;
-  
-  // Tagline
-  const rawTagline = heroData.ondertitel || heroData.tagline || (fallbackTaglineKey ? info[fallbackTaglineKey] : '');
+  useEffect(() => {
+    const sections = SECTION_IDS.map((id) => document.getElementById(id)).filter(Boolean);
+    if (!sections.length || typeof IntersectionObserver === 'undefined') return;
 
-  const titleString = extractText(heroTitleValue, 'Welcome');
-  const taglineString = extractText(rawTagline, '');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: '-45% 0px -50% 0px', threshold: [0, 0.2, 0.6] }
+    );
 
-  const sortedNav = [...navData].sort((a, b) => (a.menu_positie || 0) - (b.menu_positie || 0));
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    const onKey = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const solid = scrolled || open;
 
   return (
     <>
-      {/* Fixed Sticky Navigation Bar */}
-      <nav
-        data-dock-element="header-nav"
-        className="fixed top-0 left-0 right-0 z-[1000] w-full px-8 py-4 flex items-center justify-between border-b transition-all duration-300"
+      <header
+        className={cx(
+          'fixed inset-x-0 top-0 z-[1000] border-b transition-[background-color,color,border-color,box-shadow] duration-500',
+          solid
+            ? 'border-[var(--color-line)] text-[var(--color-heading)] shadow-[0_10px_30px_-24px_rgba(10,18,14,0.55)]'
+            : 'border-transparent text-[#f8f5ee]'
+        )}
         style={{
-          display: (settings.header_zichtbaar === false || settings.header_visible === false) ? 'none' : 'flex',
-          height: (settings.header_hoogte || settings.header_height) ? `${settings.header_hoogte || settings.header_height}px` : 'var(--header-height, auto)',
-          backgroundColor: 'var(--header-bg, var(--color-header, rgba(var(--color-primary-rgb), 0.6)))',
-          backdropFilter: 'var(--header-blur, blur(12px))',
-          borderColor: 'var(--header-border, rgba(255,255,255,0.1))'
+          backgroundColor: solid ? 'color-mix(in srgb, var(--color-background) 88%, transparent)' : 'transparent',
+          backdropFilter: solid ? 'blur(18px)' : 'none',
         }}
       >
-        <div className="flex items-center gap-4">
-          {(settings.logo_afbeelding || settings.site_logo_image) ? (
-            <div 
-              data-dock-element="header-logo"
-              className="w-10 h-10 overflow-hidden"
-              style={{ display: (settings.toon_logo === false || settings.header_show_logo === false) ? 'none' : 'block' }}
-            >
-              <img src={getImageUrl(settings.logo_afbeelding || settings.site_logo_image)} className="w-full h-full object-contain" data-dock-type="media" data-dock-bind="header_settings.0.settings.logo_afbeelding" />
-            </div>
-          ) : (
-            <div 
-              data-dock-element="header-logo"
-              className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center text-xl"
-              style={{ display: (settings.toon_logo === false || settings.header_show_logo === false) ? 'none' : 'flex' }}
-            >
-              <i className="fa-solid fa-scissors text-white"></i>
-            </div>
-          )}
-          <span className="font-serif font-bold text-xl tracking-tighter uppercase" data-dock-type="text" data-dock-bind="footer.0.bedrijfsnaam">{navTitleValue}</span>
-        </div>
+        <div className="shell flex h-16 items-center justify-between gap-6 md:h-20">
+          <a href="#hero" className="group flex items-center gap-3" aria-label={`${brand} — naar boven`}>
+            <img
+              src={`${import.meta.env.BASE_URL}brand-mark.svg`}
+              alt=""
+              width="40"
+              height="40"
+              className="h-9 w-9 shrink-0 md:h-10 md:w-10"
+            />
+            <span className="flex flex-col leading-none">
+              <span className="font-serif text-lg tracking-[-0.02em] md:text-[1.4rem]">{brand}</span>
+              <span className="mt-1.5 text-[9.5px] font-bold uppercase tracking-[0.3em] opacity-60 md:text-[10px]">
+                Haarstudio · Gent
+              </span>
+            </span>
+          </a>
 
-        <div 
-          data-dock-element="header-navbar"
-          className="hidden md:flex items-center gap-8"
-          style={{ display: (settings.toon_navigatie === false || settings.header_show_navbar === false) ? 'none' : 'flex' }}
-        >
-          {sortedNav.map((item, idx) => (
-            <a
-              key={idx}
-              href={`#${item.slug}`}
-              data-dock-element={item.is_call_to_action ? "header-button" : undefined}
-              style={{ display: (item.is_call_to_action && (settings.toon_cta_knop === false || settings.header_show_button === false)) ? 'none' : undefined }}
-              className={`text-xs font-bold uppercase tracking-widest transition-colors hover:text-accent ${item.is_call_to_action ? 'px-5 py-2 bg-accent text-white rounded-full shadow-lg shadow-accent/20' : 'text-white/70'}`}
-            >
-              <span data-dock-type="text" data-dock-bind={`navbar.${idx}.titel_navigatie`}>{extractText(item.titel_navigatie)}</span>
-            </a>
-          ))}
-        </div>
-      </nav>
+          <nav className="hidden items-center gap-8 lg:flex" aria-label="Hoofdnavigatie">
+            {navItems.map((item) => {
+              const label = text(item.titel_navigatie);
+              const isActive = active === item.slug;
+              if (item.is_call_to_action) {
+                return (
+                  <a
+                    key={`${item.slug}-${item.pagina_id ?? label}`}
+                    href={`#${item.slug}`}
+                    className={cx('btn', solid ? 'btn-solid' : 'btn-light', 'ml-2 min-h-0 px-6 py-3 text-[11px]')}
+                  >
+                    {label || 'Afspraak'}
+                  </a>
+                );
+              }
+              return (
+                <a
+                  key={`${item.slug}-${item.pagina_id ?? label}`}
+                  href={`#${item.slug}`}
+                  className={cx(
+                    'relative py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition-[color,opacity] duration-300',
+                    solid
+                      ? isActive
+                        ? 'text-[var(--color-accent)]'
+                        : 'text-[var(--color-heading)] opacity-70 hover:opacity-100'
+                      : isActive
+                        ? 'text-white'
+                        : 'text-white opacity-70 hover:opacity-100'
+                  )}
+                >
+                  {label}
+                  <span
+                    className={cx(
+                      'absolute -bottom-0.5 left-0 h-px bg-current transition-all duration-300',
+                      isActive ? 'w-full opacity-100' : 'w-0 opacity-0'
+                    )}
+                  />
+                </a>
+              );
+            })}
+          </nav>
 
-      {/* Main Header / Hero Section */}
-      <header 
-        id="hero" 
-        data-dock-section="hero"
-        className="relative min-h-[85vh] flex flex-col overflow-hidden bg-primary text-white pt-20"
-      >
-        {/* Background Media */}
-        <div className="absolute inset-0">
-          <img src={getImageUrl(heroData.hero_afbeelding || heroData.hero_image)} className="w-full h-full object-cover" data-dock-type="media" data-dock-bind="hero.0.heroData.hero_afbeelding" />
-          {/* Dynamic Gradient Overlay */}
-          <div
-            className="absolute inset-0 z-10 pointer-events-none"
-            style={{
-              background: `linear-gradient(to bottom, var(--hero-overlay-start, rgba(0,0,0,0.8)), var(--hero-overlay-end, rgba(0,0,0,0.3)))`
-            }}
-          ></div>
-        </div>
-
-        <div className="flex-1 flex items-center justify-center text-center px-6 relative z-20">
-          <div className="relative z-10 max-w-4xl mx-auto reveal">
-            <h1 
-              className="text-5xl md:text-7xl lg:text-9xl mb-8 font-serif font-bold leading-tight" 
-              style={{ color: (typeof heroData.titel === 'object' && heroData.titel?.color) ? heroData.titel.color : 'inherit' }}
-              data-dock-type="text" 
-              data-dock-bind="hero.0.heroData.titel"
-            >
-              {titleString}
-            </h1>
-
-            {taglineString && (
-              <p className="text-xl md:text-3xl font-light text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed italic" data-dock-type="text" data-dock-bind="hero.0.heroData.ondertitel">{taglineString}</p>
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? 'Menu sluiten' : 'Menu openen'}
+            className={cx(
+              'relative z-[1100] flex h-11 w-11 items-center justify-center rounded-full border transition-colors lg:hidden',
+              solid ? 'border-[var(--color-line)] text-[var(--color-heading)]' : 'border-white/35 text-white'
             )}
-            <div className="flex gap-6 justify-center">
-              <a href="#tarieven" className="btn-primary px-10 py-5 text-lg">Onze Diensten</a>
-              <a href="#footer" className="px-10 py-5 border-2 border-white/30 rounded-full font-bold hover:bg-white hover:text-primary transition-all">Contact</a>
-            </div>
-          </div>
-        </div>
-
-        {/* Modern Wave Divider */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none rotate-180 z-20">
-          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-[calc(100%+1.3px)] h-20 fill-background">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V46.96C25.54,60.05,72.59,70.97,121.39,70.97c48.8,0,105.51-12.21,135.51-24.54l64.49,10Z"></path>
-          </svg>
+          >
+            <span className="sr-only">Menu</span>
+            <span className="relative block h-3 w-5">
+              <span
+                className={cx(
+                  'absolute left-0 block h-px w-full bg-current transition-transform duration-300',
+                  open ? 'top-1.5 rotate-45' : 'top-0'
+                )}
+              />
+              <span
+                className={cx(
+                  'absolute left-0 block h-px w-full bg-current transition-transform duration-300',
+                  open ? 'top-1.5 -rotate-45' : 'top-3'
+                )}
+              />
+            </span>
+          </button>
         </div>
       </header>
+
+      {/* Mobiel menu */}
+      <div
+        id="mobile-menu"
+        className={cx(
+          'fixed inset-0 z-[1050] flex flex-col bg-[#101a15] text-[#f4efe5] transition-[opacity,visibility] duration-300 lg:hidden',
+          open ? 'visible opacity-100' : 'invisible opacity-0'
+        )}
+      >
+        <div className="shell flex h-16 items-center justify-between md:h-20">
+          <span className="font-serif text-lg">{brand}</span>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Menu sluiten"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-lg"
+          >
+            <span aria-hidden="true">✕</span>
+          </button>
+        </div>
+
+        <nav className="shell flex flex-1 flex-col justify-center gap-1 py-8" aria-label="Mobiele navigatie">
+          {navItems.map((item, index) => (
+            <a
+              key={`${item.slug}-m-${index}`}
+              href={`#${item.slug}`}
+              onClick={() => setOpen(false)}
+              className="group flex items-baseline gap-4 border-b border-white/10 py-4"
+            >
+              <span className="w-6 text-[11px] font-bold tracking-[0.25em] text-[#d98b62]">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="font-serif text-[1.75rem] leading-none tracking-[-0.02em] text-[#f4efe5]">
+                {text(item.titel_navigatie)}
+              </span>
+            </a>
+          ))}
+        </nav>
+
+        <div className="shell flex flex-col gap-3 pb-10 text-sm text-white/70">
+          <a href="tel:+3292229922" className="hover:text-white">
+            09 222 99 22
+          </a>
+          <span>Dok Noord 3 · 9000 Gent</span>
+          <span className="text-[11px] uppercase tracking-[0.28em] text-white/40">Aveda salon</span>
+        </div>
+      </div>
     </>
   );
 }
-
-export default Header;
