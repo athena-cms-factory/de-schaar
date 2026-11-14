@@ -37,7 +37,7 @@ const StyleInjector = ({ data = {} }) => {
       'title_color': ['--color-title'],
       'heading_color': ['--color-heading'],
       'accent_color': ['--color-accent'],
-      'button_color': ['--color-button'],
+      'button_color': ['--color-button-bg', '--color-button'],
       'card_color': ['--color-card', '--bg-surface'],
       'header_color': ['--color-header', '--bg-header'],
       'footer_color': ['--color-footer-bg'],

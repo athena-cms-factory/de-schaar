@@ -1,9 +1,4 @@
 @import "tailwindcss";
-
-/* 
-   Athena Modern Theme Integration
-   Hier importeren we de design tokens en basisstijlen van Tailwind v4
-*/
 @import "./modern.css";
 
 /* 
@@ -15,6 +10,11 @@
   /* Zorg dat de cart provider knoppen er goed uitzien als ze niet overschreven zijn */
   button {
     cursor: pointer;
+  }
+
+  /* Voorkom dat de sticky header content overlapt bij anchor-navigatie */
+  [id] {
+    scroll-margin-top: calc(var(--header-h) + 12px);
   }
 }
 
@@ -35,15 +35,20 @@
   }
 
   @keyframes slideIn {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
 
   .cart-item {
-    @apply flex justify-between items-center py-4 border-b border-slate-100;
+    @apply flex justify-between items-center py-4 border-b;
   }
 
   .checkout-btn {
-    @apply w-full py-4 bg-accent text-white rounded-2xl font-bold shadow-xl shadow-accent/20 hover:scale-[1.02] transition-transform;
+    @apply w-full py-4 text-white rounded-2xl font-bold shadow-xl hover:scale-[1.02] transition-transform;
+    background-color: var(--color-button-bg);
   }
 }

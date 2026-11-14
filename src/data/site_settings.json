@@ -1,13 +1,15 @@
 {
-  "--color-heading-rgb": "161 142 23",
-  "--color-accent-rgb": "158 158 158",
   "toon_logo": true,
+  "toon_titel": true,
   "toon_ondertitel": true,
-  "toon_titel": false,
-  "light_button_color": "#d03535",
-  "--color-button-rgb": "208 53 53",
-  "dark_heading_color": "#d73c3c",
-  "dark_accent_color": "#d35555",
-  "light_accent_color": "#b3b3b3",
-  "light_heading_color": "#a18e17"
+  "light_primary_color": "#16241e",
+  "light_heading_color": "#16241e",
+  "light_title_color": "#16241e",
+  "light_accent_color": "#a24b28",
+  "light_button_color": "#16241e",
+  "light_card_color": "#fffdf8",
+  "light_header_color": "#f6f1e8",
+  "light_footer_color": "#101a15",
+  "light_bg_color": "#f6f1e8",
+  "light_text_color": "#2b2a25"
 }
